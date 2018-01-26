@@ -1,0 +1,60 @@
+{
+  "services":
+    [
+	  {
+        "service": "apigateway",
+        "account": false
+      },
+      {
+	    "service": "artifact",
+	    "region": false,
+	    "account": false
+	  },
+	  {
+	    "service": "cloudwatch",
+	    "resource": "^dashboard",
+	    "region": false
+	  },
+      {
+        "service": "ec2",
+        "resource": "^(image|snapshot)",
+        "account": false
+      },
+      {
+        "service": "elasticbeanstalk",
+        "resource": "solutionstack",
+        "account": false
+      },
+      {
+        "service": "health",
+        "resource": "^event",
+        "account": false
+      },
+      {
+        "service": "iam",
+        "region": false
+      },
+      {
+        "service": "route53",
+        "region": false,
+        "account": false
+      },
+      {
+        "service": "s3",
+        "region": false,
+        "account": false
+      },
+      {
+        "service": "sts",
+        "region": false
+      },
+      {
+        "service": "waf",
+        "region": false
+      },
+      {
+        "service": "waf-regional",
+        "region": false
+      }
+    ]
+}
