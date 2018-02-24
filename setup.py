@@ -1,8 +1,16 @@
 from setuptools import setup
 
+def get_version(name):
+    import os.path
+    path = os.path.join(name, '_version')
+    if not os.path.exists(path):
+        return "0.0.0"
+    with open(path) as f:
+        return f.read().strip()
+
 setup(
     name='aws-arn',
-    version='0.1.0',
+    version=get_version('aws_arn'),
     description='Create properly formatted AWS ARNs according to service rules',
     packages=["aws_arn"],
     package_data={
@@ -16,7 +24,7 @@ setup(
     author='Ben Kehoe',
     author_email='bkehoe@irobot.com',
     project_urls={
-        "https://github.com/benkehoe/aws-arn",
+        "Source code": "https://github.com/benkehoe/aws-arn",
     },
     license='Apache Software License 2.0',
     classifiers=(

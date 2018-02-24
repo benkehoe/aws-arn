@@ -25,6 +25,13 @@ import collections
 import six
 import codecs
 
+def _get_version():
+    if not pkg_resources.resource_exists(__name__, '_version'):
+        return '0.0.0'
+    with pkg_resources.resource_stream(__name__, '_version') as fp:
+        return codecs.getreader('utf-8')(fp).read().strip()
+__version__ = _get_version()
+
 with pkg_resources.resource_stream(__name__, 'config.json') as fp:
     _reader = codecs.getreader('utf-8')
     CONFIG = json.load(_reader(fp))
