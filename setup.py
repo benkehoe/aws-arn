@@ -14,7 +14,7 @@ setup(
     description='Create properly formatted AWS ARNs according to service rules',
     packages=["aws_arn"],
     package_data={
-        "aws_arn": ["config.json"]
+        "aws_arn": ["config.json", "_version"]
     },
     entry_points={
         'console_scripts': [
