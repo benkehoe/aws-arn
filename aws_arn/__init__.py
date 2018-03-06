@@ -74,7 +74,7 @@ def arn_config(service, resource, force_region=None, force_account=None):
     
     return arn_has_region, arn_has_account
 
-def arn(service, resource, region=None, account=None, profile=None, partition=None, force_region=None, force_account=None):
+def arn(service, resource, region=None, account=None, profile=None, partition=None, force_region=None, force_account=None, on_error=None):
     """Construct an ARN for the given service and resource.
     The ARN format is arn:{partition}:{service}:{region}:{account-id}:{resource-id}
     Some services, and some resources within services, exclude either or both of
@@ -96,6 +96,12 @@ def arn(service, resource, region=None, account=None, profile=None, partition=No
     
     session = None
     
+    def err(msg):
+        if on_error:
+            return on_error(msg)
+        else:
+            raise RuntimeError(msg)
+    
     if not arn_has_region:
         region = ''
     elif not region:
@@ -113,12 +119,12 @@ def arn(service, resource, region=None, account=None, profile=None, partition=No
             try:
                 import boto3
             except:
-                sys.exit("Error: boto3 is not installed")
+                err("Error: boto3 is not installed")
             session = session or boto3.Session(profile_name=profile)
             try:
                 account = session.client('sts').get_caller_identity()['Account']
             except Exception as e:
-                sys.exit("Error using profile to get account: {}".format(e))
+                err("Error using profile to get account: {}".format(e))
         else:
             missing.append('account')
     elif account != '*':
@@ -127,7 +133,7 @@ def arn(service, resource, region=None, account=None, profile=None, partition=No
         account = ''
         
     if missing:
-        sys.exit("Error: {} required".format(' and '.join(missing)))
+        err("Error: {} required".format(' and '.join(missing)))
     
     return 'arn:{partition}:{service}:{region}:{account}:{resource}'.format(**{
         'partition': partition,
@@ -211,17 +217,21 @@ def main():
     parser.add_argument('service', help='The service namespace')
     parser.add_argument('resource', help='The resource-specific part of the ARN')
     
+    region_group = parser.add_argument_group()
+    region_group.add_argument('--region', '-r')
+    region_group.add_argument('--force-region', choices=['on', 'off'], help="Override the built-in config")
+    
+    account_group = parser.add_argument_group()
+    account_mutex_group = account_group.add_mutually_exclusive_group()
+    account_mutex_group.add_argument('--account', '-a')
+    account_mutex_group.add_argument('--fake-account', action='store_const', const='123456789012', dest='account', help="Use a fake account number")
+    account_group.add_argument('--force-account', choices=['on', 'off'], help="Override the built-in config")
+    
+    profile_group = parser.add_mutually_exclusive_group()
+    profile_group.add_argument('--profile', help="Retrieve region and/or account from AWS profile, if needed")
+    profile_group.add_argument('--default-profile', action='store_const', const='default', dest='profile')
+    
     parser.add_argument('--partition', default='aws')
-    
-    parser.add_argument('--region', '-r')
-    parser.add_argument('--force-region', choices=['on', 'off'], help="Override the built-in config")
-    
-    parser.add_argument('--account', '-a')
-    parser.add_argument('--fake-account', action='store_const', const='123456789012', dest='account', help="Use a fake account number")
-    parser.add_argument('--force-account', choices=['on', 'off'], help="Override the built-in config")
-    
-    parser.add_argument('--profile', help="Retrieve region and/or account from AWS profile, if needed")
-    parser.add_argument('--default-profile', action='store_const', const='default', dest='profile')
     
     args = parser.parse_args()
     
@@ -243,7 +253,8 @@ def main():
                      region=args.region, account=args.account,
                      profile=args.profile,
                      partition=args.partition,
-                     force_region=force_region, force_account=force_account)
+                     force_region=force_region, force_account=force_account,
+                     on_error=sys.exit)
     
     six.print_(arn_string)
 
